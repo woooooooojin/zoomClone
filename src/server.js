@@ -1,6 +1,6 @@
 import express from "express";
 import http from "http";
-import WebSocket from "ws"
+import { Server } from "socket.io";
 
 const app = express()
 
@@ -13,30 +13,38 @@ app.get("/*",(_,res)=>res.redirect("/"))
 const handelListen = ()=>console.log(`Listening on http://localhost:3000`)
 // app.listen(3000, handelListen)
 
-const server = http.createServer(app)
+const httpServer = http.createServer(app)
+const wsServer = new Server(httpServer);
 
-const wss = new WebSocket.Server({server})
-
-const sockets = [];
-
-wss.on('connection',(socket)=>{
-    sockets.push(socket)
-    socket['nickname'] = 'anonymous'
-    console.log('Connected to Browser')
-    socket.on("close",()=>console.log('Disconnected from the Browser'))
-    socket.on("message",(msg)=>{
-        const message = JSON.parse(msg)
-        switch(message.type){
-            case "new_message":
-                sockets.forEach((aSocket)=>aSocket.send(`${socket.nickname} : ${message.payload}`))
-                break ;
-            case "nickname":
-                socket['nickname'] = message.payload
-                break;
-
-        }
+wsServer.on("connection", socket =>{
+    socket.on('enter_room',(msg)=>{
+        console.log(msg)
        
     })
 })
 
-server.listen(3000, handelListen)
+// const wss = new WebSocket.Server({httpServer})
+
+// const sockets = [];
+
+// wss.on('connection',(socket)=>{
+//     sockets.push(socket)
+//     socket['nickname'] = 'anonymous'
+//     console.log('Connected to Browser')
+//     socket.on("close",()=>console.log('Disconnected from the Browser'))
+//     socket.on("message",(msg)=>{
+//         const message = JSON.parse(msg)
+//         switch(message.type){
+//             case "new_message":
+//                 sockets.forEach((aSocket)=>aSocket.send(`${socket.nickname} : ${message.payload}`))
+//                 break ;
+//             case "nickname":
+//                 socket['nickname'] = message.payload
+//                 break;
+
+//         }
+       
+//     })
+// })
+
+httpServer.listen(3000, handelListen)
